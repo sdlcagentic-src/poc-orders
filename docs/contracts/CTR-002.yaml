@@ -1,0 +1,221 @@
+asyncapi: 3.0.0
+x-artifact:
+  id: CTR-002
+  type: contract
+  version: 1
+  risk_tier: HIGH
+  produced_by:
+    agent: architect
+    model: claude-sonnet-5-5
+    prompt_pack: bmad-6.12.1@790dae9c8e2a1d73575cb2d40b14dd4963391f29
+    run_id: RUN-0011
+  inputs:
+  - BC-001
+  - LANG-002
+  - LANG-007
+  - LANG-008
+  - LANG-009
+  - LANG-010
+  - LANG-011
+  trace:
+    derives_from:
+    - BC-001
+  content_hash: sha256:d7fd68d607a0dd5c9a5dc76b2d4a2c2a936ee021b85666a36ac33a5170f069ea
+  created_at: 2026-10-14T20:41:06.728590Z
+info:
+  title: Order Management Events
+  version: 1.0.0
+  description: Order lifecycle events published by Order Management and the stock
+    check result it consumes.
+channels:
+  inventoryStockChecked:
+    address: inventory.stock.checked
+    messages:
+      consumeStockChecked:
+        name: consumeStockChecked
+        summary: Stock checked
+        payload:
+          $ref: "#/components/schemas/StockCheckedPayload"
+  ordersCancelled:
+    address: orders.cancelled
+    messages:
+      publishOrderCancelled:
+        name: publishOrderCancelled
+        summary: Order cancelled
+        payload:
+          $ref: "#/components/schemas/OrderCancelledPayload"
+  ordersConfirmed:
+    address: orders.confirmed
+    messages:
+      publishOrderConfirmed:
+        name: publishOrderConfirmed
+        summary: Order confirmed
+        payload:
+          $ref: "#/components/schemas/OrderConfirmedPayload"
+  ordersPlaced:
+    address: orders.placed
+    messages:
+      publishOrderPlaced:
+        name: publishOrderPlaced
+        summary: Order placed
+        payload:
+          $ref: "#/components/schemas/OrderPlacedPayload"
+  ordersRejected:
+    address: orders.rejected
+    messages:
+      publishOrderRejected:
+        name: publishOrderRejected
+        summary: Order rejected
+        payload:
+          $ref: "#/components/schemas/OrderRejectedPayload"
+operations:
+  consumeStockChecked:
+    action: receive
+    channel:
+      $ref: "#/channels/inventoryStockChecked"
+    summary: Stock checked
+    description: Receives the availability result used to confirm or reject an order.
+    messages:
+    - $ref: "#/channels/inventoryStockChecked/messages/consumeStockChecked"
+    x-event: LANG-008
+  publishOrderCancelled:
+    action: send
+    channel:
+      $ref: "#/channels/ordersCancelled"
+    summary: Order cancelled
+    description: Announces that a customer cancelled an order.
+    messages:
+    - $ref: "#/channels/ordersCancelled/messages/publishOrderCancelled"
+    x-event: LANG-011
+  publishOrderConfirmed:
+    action: send
+    channel:
+      $ref: "#/channels/ordersConfirmed"
+    summary: Order confirmed
+    description: Announces that all items of an order are in stock and reserved.
+    messages:
+    - $ref: "#/channels/ordersConfirmed/messages/publishOrderConfirmed"
+    x-event: LANG-009
+  publishOrderPlaced:
+    action: send
+    channel:
+      $ref: "#/channels/ordersPlaced"
+    summary: Order placed
+    description: Announces that a customer submitted a new order.
+    messages:
+    - $ref: "#/channels/ordersPlaced/messages/publishOrderPlaced"
+    x-event: LANG-007
+  publishOrderRejected:
+    action: send
+    channel:
+      $ref: "#/channels/ordersRejected"
+    summary: Order rejected
+    description: Announces that an order was rejected because items are out of stock.
+    messages:
+    - $ref: "#/channels/ordersRejected/messages/publishOrderRejected"
+    x-event: LANG-010
+components:
+  schemas:
+    LineItem:
+      type: object
+      description: A product entry with the requested quantity.
+      x-term: LANG-002
+      required:
+      - productId
+      - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+    OrderPlacedPayload:
+      type: object
+      description: Payload of an placed order.
+      required:
+      - lineItems
+      - orderId
+      - placedAt
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineItem"
+        placedAt:
+          type: string
+          format: date-time
+    OrderConfirmedPayload:
+      type: object
+      description: Payload of a confirmed order.
+      required:
+      - confirmedAt
+      - customerEmail
+      - orderId
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        customerEmail:
+          type: string
+        confirmedAt:
+          type: string
+          format: date-time
+    OrderRejectedPayload:
+      type: object
+      description: Payload of a rejected order.
+      required:
+      - customerEmail
+      - orderId
+      - rejectedAt
+      - unavailableProductIds
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        customerEmail:
+          type: string
+        unavailableProductIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        rejectedAt:
+          type: string
+          format: date-time
+    OrderCancelledPayload:
+      type: object
+      description: Payload of a cancelled order.
+      required:
+      - cancelledAt
+      - customerEmail
+      - orderId
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        customerEmail:
+          type: string
+        cancelledAt:
+          type: string
+          format: date-time
+    StockCheckedPayload:
+      type: object
+      description: Result of the stock check for an order.
+      required:
+      - allAvailable
+      - orderId
+      - unavailableProductIds
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        allAvailable:
+          type: boolean
+        unavailableProductIds:
+          type: array
+          items:
+            type: string
+            format: uuid

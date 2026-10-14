@@ -1,0 +1,100 @@
+asyncapi: 3.0.0
+x-artifact:
+  id: CTR-004
+  type: contract
+  version: 1
+  risk_tier: HIGH
+  produced_by:
+    agent: architect
+    model: claude-sonnet-5-5
+    prompt_pack: bmad-6.12.1@790dae9c8e2a1d73575cb2d40b14dd4963391f29
+    run_id: RUN-0011
+  inputs:
+  - BC-002
+  - LANG-008
+  - LANG-012
+  trace:
+    derives_from:
+    - BC-002
+  content_hash: sha256:3a9369fba7ab27f585b8aa49eb99eae55611de86e56e8bedd55c3cdf2698a087
+  created_at: 2026-10-14T20:41:06.759216Z
+info:
+  title: Inventory Management Events
+  version: 1.0.0
+  description: Events published by Inventory Management about stock checks and releases.
+channels:
+  inventoryStockChecked:
+    address: inventory.stock.checked
+    messages:
+      publishStockChecked:
+        name: publishStockChecked
+        summary: Stock checked
+        payload:
+          $ref: "#/components/schemas/StockCheckedPayload"
+  inventoryStockReleased:
+    address: inventory.stock.released
+    messages:
+      publishStockReleased:
+        name: publishStockReleased
+        summary: Stock released
+        payload:
+          $ref: "#/components/schemas/StockReleasedPayload"
+operations:
+  publishStockChecked:
+    action: send
+    channel:
+      $ref: "#/channels/inventoryStockChecked"
+    summary: Stock checked
+    description: Announces the availability result of the items of an order.
+    messages:
+    - $ref: "#/channels/inventoryStockChecked/messages/publishStockChecked"
+    x-event: LANG-008
+  publishStockReleased:
+    action: send
+    channel:
+      $ref: "#/channels/inventoryStockReleased"
+    summary: Stock released
+    description: Announces that reserved stock returned to available stock.
+    messages:
+    - $ref: "#/channels/inventoryStockReleased/messages/publishStockReleased"
+    x-event: LANG-012
+components:
+  schemas:
+    StockCheckedPayload:
+      type: object
+      description: Result of the stock check for an order.
+      required:
+      - allAvailable
+      - orderId
+      - unavailableProductIds
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        allAvailable:
+          type: boolean
+        unavailableProductIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    StockReleasedPayload:
+      type: object
+      description: Stock released back to availability.
+      required:
+      - orderId
+      - productId
+      - quantity
+      - releasedAt
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+        releasedAt:
+          type: string
+          format: date-time

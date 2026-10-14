@@ -1,0 +1,173 @@
+openapi: 3.1.0
+x-artifact:
+  id: CTR-003
+  type: contract
+  version: 1
+  risk_tier: HIGH
+  produced_by:
+    agent: architect
+    model: claude-sonnet-5-5
+    prompt_pack: bmad-6.12.1@790dae9c8e2a1d73575cb2d40b14dd4963391f29
+    run_id: RUN-0011
+  inputs:
+  - BC-002
+  - LANG-004
+  - LANG-005
+  - STORY-002
+  - STORY-008
+  - STORY-011
+  trace:
+    derives_from:
+    - BC-002
+  content_hash: sha256:e06b3c56ce4705f9934d930039155c9ba1a9c4f718993e53b7cfc74ae2d61e73
+  created_at: 2026-10-14T20:41:06.745287Z
+info:
+  title: Inventory Management API
+  version: 1.0.0
+  description: Synchronous operations to reserve stock for orders and view stock levels.
+paths:
+  /reservations:
+    post:
+      operationId: reserveStock
+      summary: Check stock and reserve
+      description: Verifies that all items of an order are in stock and reserves them
+        atomically.
+      x-stories:
+      - STORY-002
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReserveStockRequest"
+      responses:
+        "201":
+          description: Stock reserved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reservation"
+        "400":
+          description: The request is malformed.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "409":
+          description: One or more items are out of stock.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "422":
+          description: A product is unknown or a quantity is invalid.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /stock-levels:
+    get:
+      operationId: listStockLevels
+      summary: View stock levels
+      description: Returns the current stock level of each product.
+      x-stories:
+      - STORY-008
+      responses:
+        "200":
+          description: Stock levels per product.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockLevelList"
+components:
+  schemas:
+    ReservationItem:
+      type: object
+      description: A product and quantity to reserve.
+      required:
+      - productId
+      - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+    ReserveStockRequest:
+      type: object
+      description: Items of an order to check and reserve.
+      required:
+      - items
+      - orderId
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReservationItem"
+    Reservation:
+      type: object
+      description: A hold on inventory units for a confirmed order.
+      x-term: LANG-005
+      required:
+      - items
+      - orderId
+      - reservationId
+      - reservedAt
+      properties:
+        reservationId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReservationItem"
+        reservedAt:
+          type: string
+          format: date-time
+    StockLevel:
+      type: object
+      description: Current quantity of a product available for ordering.
+      x-term: LANG-004
+      required:
+      - productId
+      - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+    StockLevelList:
+      type: object
+      description: Stock levels of all products.
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockLevel"
+    Problem:
+      type: object
+      description: A problem document (RFC 7807).
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference
+x-no-interface:
+- STORY-011
