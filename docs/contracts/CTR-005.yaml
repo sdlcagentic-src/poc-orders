@@ -1,0 +1,211 @@
+asyncapi: 3.0.0
+x-artifact:
+  id: CTR-005
+  type: contract
+  version: 1
+  risk_tier: HIGH
+  produced_by:
+    agent: architect
+    model: claude-sonnet-5-5
+    prompt_pack: bmad-6.12.1@790dae9c8e2a1d73575cb2d40b14dd4963391f29
+    run_id: RUN-0011
+  inputs:
+  - BC-003
+  - LANG-009
+  - LANG-010
+  - LANG-011
+  - LANG-013
+  - LANG-014
+  - LANG-015
+  - STORY-005
+  - STORY-006
+  - STORY-007
+  - STORY-012
+  trace:
+    derives_from:
+    - BC-003
+  content_hash: sha256:dae6db93338c00132a15440cb6f309cc0a40e1c38c8acd591d12f1563e514ac9
+  created_at: 2026-10-14T20:41:06.770050Z
+info:
+  title: Order Notifications Events
+  version: 1.0.0
+  description: "Order outcome events consumed to send customer emails, and the notification\
+    \ events published afterwards."
+channels:
+  notificationsCancellationSent:
+    address: notifications.cancellation.sent
+    messages:
+      publishCancellationEmailSent:
+        name: publishCancellationEmailSent
+        summary: Cancellation email sent
+        payload:
+          $ref: "#/components/schemas/EmailSentPayload"
+  notificationsConfirmationSent:
+    address: notifications.confirmation.sent
+    messages:
+      publishConfirmationEmailSent:
+        name: publishConfirmationEmailSent
+        summary: Confirmation email sent
+        payload:
+          $ref: "#/components/schemas/EmailSentPayload"
+  notificationsRejectionSent:
+    address: notifications.rejection.sent
+    messages:
+      publishRejectionEmailSent:
+        name: publishRejectionEmailSent
+        summary: Rejection email sent
+        payload:
+          $ref: "#/components/schemas/EmailSentPayload"
+  ordersCancelled:
+    address: orders.cancelled
+    messages:
+      consumeOrderCancelled:
+        name: consumeOrderCancelled
+        summary: Order cancelled
+        payload:
+          $ref: "#/components/schemas/OrderCancelledPayload"
+  ordersConfirmed:
+    address: orders.confirmed
+    messages:
+      consumeOrderConfirmed:
+        name: consumeOrderConfirmed
+        summary: Order confirmed
+        payload:
+          $ref: "#/components/schemas/OrderConfirmedPayload"
+  ordersRejected:
+    address: orders.rejected
+    messages:
+      consumeOrderRejected:
+        name: consumeOrderRejected
+        summary: Order rejected
+        payload:
+          $ref: "#/components/schemas/OrderRejectedPayload"
+operations:
+  consumeOrderCancelled:
+    action: receive
+    channel:
+      $ref: "#/channels/ordersCancelled"
+    summary: Order cancelled
+    description: Triggers the cancellation email to the customer.
+    messages:
+    - $ref: "#/channels/ordersCancelled/messages/consumeOrderCancelled"
+    x-event: LANG-011
+  consumeOrderConfirmed:
+    action: receive
+    channel:
+      $ref: "#/channels/ordersConfirmed"
+    summary: Order confirmed
+    description: Triggers the confirmation email to the customer.
+    messages:
+    - $ref: "#/channels/ordersConfirmed/messages/consumeOrderConfirmed"
+    x-event: LANG-009
+  consumeOrderRejected:
+    action: receive
+    channel:
+      $ref: "#/channels/ordersRejected"
+    summary: Order rejected
+    description: Triggers the rejection email to the customer.
+    messages:
+    - $ref: "#/channels/ordersRejected/messages/consumeOrderRejected"
+    x-event: LANG-010
+  publishCancellationEmailSent:
+    action: send
+    channel:
+      $ref: "#/channels/notificationsCancellationSent"
+    summary: Cancellation email sent
+    description: Announces that the order cancellation email was dispatched.
+    messages:
+    - $ref: "#/channels/notificationsCancellationSent/messages/publishCancellationEmailSent"
+    x-event: LANG-015
+  publishConfirmationEmailSent:
+    action: send
+    channel:
+      $ref: "#/channels/notificationsConfirmationSent"
+    summary: Confirmation email sent
+    description: Announces that the order confirmation email was dispatched.
+    messages:
+    - $ref: "#/channels/notificationsConfirmationSent/messages/publishConfirmationEmailSent"
+    x-event: LANG-013
+  publishRejectionEmailSent:
+    action: send
+    channel:
+      $ref: "#/channels/notificationsRejectionSent"
+    summary: Rejection email sent
+    description: Announces that the order rejection email was dispatched.
+    messages:
+    - $ref: "#/channels/notificationsRejectionSent/messages/publishRejectionEmailSent"
+    x-event: LANG-014
+components:
+  schemas:
+    OrderConfirmedPayload:
+      type: object
+      description: Payload of a confirmed order.
+      required:
+      - confirmedAt
+      - customerEmail
+      - orderId
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        customerEmail:
+          type: string
+        confirmedAt:
+          type: string
+          format: date-time
+    OrderRejectedPayload:
+      type: object
+      description: Payload of a rejected order.
+      required:
+      - customerEmail
+      - orderId
+      - rejectedAt
+      - unavailableProductIds
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        customerEmail:
+          type: string
+        unavailableProductIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        rejectedAt:
+          type: string
+          format: date-time
+    OrderCancelledPayload:
+      type: object
+      description: Payload of a cancelled order.
+      required:
+      - cancelledAt
+      - customerEmail
+      - orderId
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        customerEmail:
+          type: string
+        cancelledAt:
+          type: string
+          format: date-time
+    EmailSentPayload:
+      type: object
+      description: Notification dispatch record without the email address.
+      required:
+      - orderId
+      - sentAt
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        sentAt:
+          type: string
+          format: date-time
+x-no-interface:
+- STORY-005
+- STORY-006
+- STORY-007
+- STORY-012
