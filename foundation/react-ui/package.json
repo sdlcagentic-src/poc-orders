@@ -1,0 +1,39 @@
+{
+  "name": "@foundation/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The shared foundation of the React user interfaces (generated; do not edit by hand, change the profile or the configuration and generate again).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
+  "scripts": {
+    "generate:sample": "openapi-typescript test/sample.openapi.yaml -o test/generated/sample.d.ts",
+    "lint": "eslint .",
+    "typecheck": "npm run generate:sample && tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "7.18.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "10.12.0",
+    "happy-dom": "21.0.1",
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.2",
+    "vite": "7.3.7",
+    "vitest": "3.2.7"
+  }
+}
