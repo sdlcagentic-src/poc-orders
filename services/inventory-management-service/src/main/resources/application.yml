@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: inventory-management-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:inventory}
+    username: ${DB_USER:inventory}
+    password: ${DB_PASSWORD:}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:9/jwks}
