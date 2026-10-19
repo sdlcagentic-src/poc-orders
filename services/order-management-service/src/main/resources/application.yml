@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: order-management-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:orders}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  kafka:
+    consumer:
+      group-id: order-management-service
+
+inventory:
+  base-url: ${INVENTORY_BASE_URL:http://inventory-management-service}
